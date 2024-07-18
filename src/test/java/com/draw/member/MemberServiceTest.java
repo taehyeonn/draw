@@ -4,6 +4,7 @@ import com.draw.domain.member.domain.Member;
 import com.draw.domain.member.dto.MemberDto;
 import com.draw.domain.member.dao.MemberRepository;
 import com.draw.domain.member.application.MemberService;
+import com.draw.global.exception.ErrorCode;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -81,7 +82,7 @@ class MemberServiceTest {
                 memberService.signup(signUpDto_정상);
             });
 
-            Assertions.assertThat(exception.getMessage()).isEqualTo("이미 존재하는 이메일입니다.");
+            Assertions.assertThat(exception.getMessage()).isEqualTo(ErrorCode.DUPLICATE_EMAIL.getMessage());
             verify(memberRepository, never()).save(any(Member.class));
         }
 
@@ -98,7 +99,7 @@ class MemberServiceTest {
                 memberService.signup(DTO_비밀번호다름);
             });
 
-            Assertions.assertThat(exception.getMessage()).isEqualTo("비밀번호가 일치하지 않습니다.");
+            Assertions.assertThat(exception.getMessage()).isEqualTo(ErrorCode.INVALID_INPUT_VALUE.getMessage());
             verify(memberRepository, never()).save(any(Member.class));
         }
     }
