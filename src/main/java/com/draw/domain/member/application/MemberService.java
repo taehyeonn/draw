@@ -3,6 +3,9 @@ package com.draw.domain.member.application;
 import com.draw.domain.member.dao.MemberRepository;
 import com.draw.domain.member.domain.Member;
 import com.draw.domain.member.dto.MemberDto;
+import com.draw.global.exception.BadRequestException;
+import com.draw.global.exception.ErrorCode;
+import com.draw.global.exception.UnauthorizedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,11 +18,11 @@ public class MemberService {
     private final PasswordEncoder passwordEncoder;
 
     public Member signup(MemberDto.SignUp dto) {
-        if (memberRepository.findByEmail(dto.getEmail()).isPresent()) {
-            throw new RuntimeException("이미 존재하는 이메일입니다.");
-        }
         if (!dto.getPassword().equals(dto.getPassword_confirm())) {
-            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+            throw new BadRequestException(ErrorCode.INVALID_INPUT_VALUE);
+        }
+        if (memberRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new UnauthorizedException(ErrorCode.DUPLICATE_EMAIL);
         }
         Member member = Member.builder()
                 .email(dto.getEmail())
