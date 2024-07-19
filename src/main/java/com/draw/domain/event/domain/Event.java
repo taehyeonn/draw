@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Entity
@@ -33,10 +35,10 @@ public class Event extends BaseEntity {
     private EventType eventType;
 
     @Column
-    private int totalParticipants;
+    private int maxParticipants;
 
     @Column
-    private int winnerCount;
+    private int maxWinners;
 
     @Column(name = "start_date_time", nullable = false)
     private LocalDateTime startDateTime;
@@ -44,27 +46,30 @@ public class Event extends BaseEntity {
     @Column(name = "end_date_time", nullable = false)
     private LocalDateTime endDateTime;
 
+//    @OneToMany(mappedBy = "event")
+//    private List<Participant> participants = new ArrayList<>();
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    protected Event(Long id, int code, String title, String content, EventType eventType, int totalParticipants,
-                    int winnerCount, LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
+    protected Event(Long id, int code, String title, String content, EventType eventType, int maxParticipants,
+                    int maxWinners, LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
         this.id = id;
         this.code = code;
         this.title = title;
         this.content = content;
         this.eventType = eventType;
-        this.totalParticipants = totalParticipants;
-        this.winnerCount = winnerCount;
+        this.maxParticipants = maxParticipants;
+        this.maxWinners = maxWinners;
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.member = member;
     }
 
-    public static Event of(String title, String content, EventType eventType, int totalParticipants, int winnerCount,
+    public static Event of(String title, String content, EventType eventType, int maxParticipants, int maxWinners,
                            LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
-        return new Event(null, generateRandomCode(), title, content, eventType, totalParticipants, winnerCount, startDateTime, endDateTime, member);
+        return new Event(null, generateRandomCode(), title, content, eventType, maxParticipants, maxWinners, startDateTime, endDateTime, member);
     }
 
     private static int generateRandomCode() { //todo 임시
