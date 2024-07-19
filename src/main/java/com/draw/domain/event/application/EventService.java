@@ -1,9 +1,13 @@
 package com.draw.domain.event.application;
 
 import com.draw.domain.event.dao.EventRepository;
+import com.draw.domain.event.dao.ParticipantRepository;
 import com.draw.domain.event.domain.Event;
+import com.draw.domain.event.domain.Participant;
+import com.draw.domain.event.dto.EventApplicationRequest;
 import com.draw.domain.event.dto.EventCreateRequest;
 import com.draw.domain.event.dto.EventResponse;
+import com.draw.domain.event.dto.ParticipantResponse;
 import com.draw.domain.member.dao.MemberRepository;
 import com.draw.domain.member.domain.Member;
 import jakarta.transaction.Transactional;
@@ -16,6 +20,7 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final MemberRepository memberRepository;
+    private final ParticipantRepository participantRepository;
 
     @Transactional
     public Event create(Long memberId, EventCreateRequest request) {
@@ -33,5 +38,12 @@ public class EventService {
 
     public EventResponse getEventResponse(int eventCode) {
         return EventResponse.from(getEventByCode(eventCode));
+    }
+
+    @Transactional
+    public ParticipantResponse apply(EventApplicationRequest request, int eventCode) {
+        Event event = getEventByCode(eventCode);
+        Participant participant = participantRepository.save(request.toEntity(event));
+        return ParticipantResponse.of(participant);
     }
 }
