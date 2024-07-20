@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Table(name = "TB_MEMBER")
 @ToString(exclude = "password")
 public class Member {
 
