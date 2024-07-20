@@ -1,9 +1,9 @@
 package com.draw.domain.event.application;
 
 import com.draw.domain.event.dao.EventRepository;
+import com.draw.domain.event.dao.GiftRepository;
 import com.draw.domain.event.dao.ParticipantRepository;
-import com.draw.domain.event.domain.Event;
-import com.draw.domain.event.domain.Participant;
+import com.draw.domain.event.domain.*;
 import com.draw.domain.event.dto.EventApplicationRequest;
 import com.draw.domain.event.dto.EventCreateRequest;
 import com.draw.domain.event.dto.EventResponse;
@@ -25,14 +25,20 @@ public class EventService {
     private final EventRepository eventRepository;
     private final MemberRepository memberRepository;
     private final ParticipantRepository participantRepository;
+    private final GiftRepository giftRepository;
 
     @Transactional
     public Event create(Long memberId, EventCreateRequest request) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
         Event event = request.toEntity(member);
-        eventRepository.save(event);
-        return event;
+        event.updateEventStatus(EventStatus.OPEN);
+        Event savedEvent = eventRepository.save(event);
+        request.gifts().stream()
+                .map(string -> Gift.of(GiftType.TEXT, string, event))
+                .map(giftRepository::save)
+                .toList();
+        return savedEvent;
     }
 
     public Event getEventByCode(int eventCode) {
@@ -57,8 +63,19 @@ public class EventService {
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 회원입니다."));
         Event event = eventRepository.findEventByMemberAndCode(member, eventCode)
                 .orElseThrow(() -> new RuntimeException("존재하지 않는 이벤트입니다."));
+        if (event.getEventStatus() != EventStatus.OPEN) {
+            throw new IllegalArgumentException("추첨할 수 없습니다.");
+        }
+        event.updateEventStatus(EventStatus.CLOSED);
+
         List<Participant> participants = participantRepository.findAllByEvent(event);
-        return selectRandomParticipants(participants, event);
+        List<Participant> winners = selectRandomParticipants(participants, event);
+        List<Gift> gifts = giftRepository.findAllByEvent_Code(eventCode);
+        for (int i = 0; i < winners.size() ; i++) {
+            Gift gift = gifts.get(i).addWinner(winners.get(i));
+            giftRepository.save(gift);
+        }
+        return winners;
     }
 
     private List<Participant> selectRandomParticipants(List<Participant> participants, Event event) {

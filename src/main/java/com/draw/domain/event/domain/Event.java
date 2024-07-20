@@ -15,7 +15,7 @@ import java.util.Random;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "EVENT")
+@Table(name = "TB_EVENT")
 public class Event extends BaseEntity {
 
     @Id
@@ -34,32 +34,36 @@ public class Event extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private EventType eventType;
 
+    @Enumerated(EnumType.STRING)
+    private EventStatus eventStatus;
+
     @Column
     private int maxParticipants;
 
     @Column
     private int maxWinners;
 
-    @Column(name = "start_date_time", nullable = false)
+    @Column(name = "START_DATE_TIME", nullable = false)
     private LocalDateTime startDateTime;
 
-    @Column(name = "end_date_time", nullable = false)
+    @Column(name = "END_DATE_TIME", nullable = false)
     private LocalDateTime endDateTime;
 
 //    @OneToMany(mappedBy = "event")
-//    private List<Participant> participants = new ArrayList<>();
+//    private List<Gift> gifts = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "MEMBER_ID")
     private Member member;
 
-    protected Event(Long id, int code, String title, String content, EventType eventType, int maxParticipants,
-                    int maxWinners, LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
+    protected Event(Long id, int code, String title, String content, EventType eventType, EventStatus eventStatus,
+                    int maxParticipants, int maxWinners, LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
         this.id = id;
         this.code = code;
         this.title = title;
         this.content = content;
         this.eventType = eventType;
+        this.eventStatus = eventStatus;
         this.maxParticipants = maxParticipants;
         this.maxWinners = maxWinners;
         this.startDateTime = startDateTime;
@@ -67,13 +71,18 @@ public class Event extends BaseEntity {
         this.member = member;
     }
 
-    public static Event of(String title, String content, EventType eventType, int maxParticipants, int maxWinners,
-                           LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
-        return new Event(null, generateRandomCode(), title, content, eventType, maxParticipants, maxWinners, startDateTime, endDateTime, member);
+    public static Event of(String title, String content, EventType eventType, int maxParticipants,
+                           int maxWinners, LocalDateTime startDateTime, LocalDateTime endDateTime, Member member) {
+        return new Event(null, generateRandomCode(), title, content, eventType, EventStatus.CREATED, maxParticipants,
+                maxWinners, startDateTime, endDateTime, member);
     }
 
     private static int generateRandomCode() { //todo 임시
         Random random = new Random();
         return 10000000 + random.nextInt(90000000); // 랜덤한 8자리 정수를 생성. 10000000 to 99999999
+    }
+
+    public void updateEventStatus(EventStatus eventStatus) {
+        this.eventStatus = eventStatus;
     }
 }
